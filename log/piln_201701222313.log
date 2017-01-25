@@ -1,9 +1,0 @@
-2017-01-22 23:13:31,809 Using software SPI
-2017-01-22 23:13:31,811 ===START PiLN Firing Daemon===
-2017-01-22 23:13:31,812 Polling for 'Started' firing profiles...
-2017-01-22 23:13:31,856 Run ID 1 is active - starting firing profile
-2017-01-22 23:13:31,856 Update profile 1 start time to 2017-01-22 23:13:31
-2017-01-22 23:13:31,879 Get segments for run ID 1
-2017-01-22 23:13:31,881 Run ID 1, segment 1 parameters: Target Temp: 110, Rate: 200, Hold Minutes: 5, Interval Seconds: 10
-2017-01-22 23:13:31,912 Raw value: 0x02541740
-2017-01-22 23:13:31,913 Raw value: 0x02541740
