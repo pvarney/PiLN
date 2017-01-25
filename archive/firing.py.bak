@@ -1,0 +1,127 @@
+#!/usr/bin/python
+
+import time
+import sys
+import MySQLdb
+import RPi.GPIO as GPIO ## Import GPIO library
+import Adafruit_GPIO.SPI as SPI
+import Adafruit_MAX31855.MAX31855 as MAX31855
+
+Kp = 2.0
+Ki = 0.0
+Kd = 0.0
+
+CLK = 25
+CS  = 24
+DO  = 18
+Sensor = MAX31855.MAX31855(CLK, CS, DO)
+
+#SetTmp = sys.argv[1]
+#Rate   = sys.argv[2]
+#HoldMin= sys.argv[3]
+#IntSec = sys.argv[4]
+SetTmp = 110.0
+Rate   = 50.0
+HoldMin= 0.0
+IntSec = 10.0
+
+HoldSec = HoldMin * 60
+RampMin = 0.0
+RampTmp = 0.0
+StartTmp= 0.0
+TmpDif  = 0.0
+Steps   = 0.0
+StepTmp = 0.0
+LastErr = 0.0
+StartSec= 0.0
+EndSec  = 0.0
+NextInt = 0.0
+
+#GPIO.setmode(GPIO.BOARD) ## Use board pin numbering
+GPIO.setup(4, GPIO.OUT) ## Setup GPIO Pin 7 to OUT
+
+DBCon = MySQLdb.connect('localhost', 'root', 'Respon801', 'KilnTrack');
+DBCur = DBCon.cursor()
+
+def CtoF(c):
+	return c * 9.0 / 5.0 + 32.0
+
+def Update ( SP, PV, IMax, IMin ):
+	global LastErr
+	Err = SP - PV
+	Pterm = Kp * Err
+	IState = ( Err * IntSec )
+	
+	if IState > IMax:
+		IState = IMax
+	elif IState < IMin:
+		IState = IMin
+
+	Iterm = Ki * IState
+	Dterm = Kd * ( ( Err - LastErr ) / IntSec )
+	LastErr = Err
+
+	return Pterm + Iterm + Dterm
+
+print "===START==="
+
+Cnt = 0
+
+while ( int(time.time()) <= EndSec ) or ( StartSec == 0 ):
+
+	time.sleep(0.5)
+
+	if int(time.time()) >= NextInt:
+		Cnt += 1
+		NextInt += IntSec
+
+		if RampTmp < SetTmp:
+			RampTmp += StepTmp 
+
+		# Get temp
+		ReadCTmp = Sensor.readTempC()
+		ReadTmp = CtoF(ReadCTmp)
+		ReadCITmp = Sensor.readInternalC()
+		ReadITmp = CtoF(ReadCITmp)
+
+		Output = Update(SetTmp,ReadTmp,100,0)
+
+		if StartTmp == 0:
+
+			StartTmp = ReadTmp
+			StartSec = int(time.time())
+			NextInt  = StartSec + IntSec
+			TmpDif   = SetTmp - StartTmp
+			RampMin  = ( TmpDif / Rate ) * 60
+			Steps    = ( RampMin * 60 ) / IntSec
+			StepTmp  = TmpDif / Steps
+			EndSec   = StartSec + ( RampMin * 60 ) + ( HoldMin * 60 )
+			RampTmp  = StartTmp + StepTmp
+
+			print "    Set Temp: ", SetTmp
+			print "  Start Temp: ", StartTmp
+			print " Temp Change: ", TmpDif
+			print "Ramp Minutes: ", RampMin
+			print "       Steps: ", Steps
+			print "   Step Temp: ", StepTmp
+			print "    Interval: ", IntSec
+			print "    StartSec: ", StartSec
+			print "      EndSec: ", EndSec
+
+		CycleOnSec  = IntSec * ( Output * 0.01 )
+
+		print ("{:5d} - Temp: {:5.2f}  SetTemp: {:5.2f}  Target: {:5.2f}  Output: {:5.2f}  CycleOnSec: {:5.2f}".format(Cnt,ReadTmp,RampTmp,SetTmp,Output,CycleOnSec))
+
+		SQL = "INSERT INTO Firing (temp, set_temp, pid_output) VALUES ( '%s', '%s', '%s' )" % ( ReadTmp, RampTmp, Output )
+		try:
+			DBCur.execute(SQL)
+			DBCon.commit()
+		except:
+			DBCon.rollback()
+			print "DB Write failed!"
+
+		print " ==> On"
+		GPIO.output(4,True) ## Turn on GPIO pin 7
+		time.sleep(CycleOnSec)
+		print " ==> Off"
+		GPIO.output(4,False) ## Turn on GPIO pin 7
