@@ -13,6 +13,9 @@ This is what I hope to accomplish:
 
 Firing process code is almost complete and I have it pulling from and updating MySQL. Will be adding web frontend next.
 
+Need to fix:
+- Move log file name update inside daemon loop
+
 Future improvements:
 - Better calculation of hold time. It should start once target temperature is reached.
 - Crash/loss of power recovery
