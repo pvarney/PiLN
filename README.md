@@ -25,14 +25,17 @@ Future improvements:
 Install:
 - Required Python modules (don't remember which are part of the standard distribution): cgi, MySQLdb, jinja2, sys, re, datetime, pymysql, json, time, logging, RPi.GPIO, Adafruit_MAX31855.MAX31855
 - Automatic startup:
-		sudo ln -s /home/PiLN/daemon/pilnfired /etc/init.d/pilnfired
-		sudo update-rc.d pilnfired defaults
+
+	sudo ln -s /home/PiLN/daemon/pilnfired /etc/init.d/pilnfired		
+	sudo update-rc.d pilnfired defaults
+		
 - Apache/Web:
-  		sudo mkdir /var/www/html/images
-  		sudo mkdir /var/www/html/style
-  		sudo ln -s /home/PiLN/images/hdrback.png /var/www/html/images/hdrback.png
-  		sudo ln -s /home/PiLN/images/piln.png /var/www/html/images/piln.png
-  		sudo ln -s /home/PiLN/style/style.css /var/www/html/style/style.css
+
+  	sudo mkdir /var/www/html/images
+  	sudo mkdir /var/www/html/style
+  	sudo ln -s /home/PiLN/images/hdrback.png /var/www/html/images/hdrback.png
+  	sudo ln -s /home/PiLN/images/piln.png /var/www/html/images/piln.png
+  	sudo ln -s /home/PiLN/style/style.css /var/www/html/style/style.css
   Added the following ScriptAlias and Directory under <IfDefine ENABLE_USR_LIB_CGI_BIN> in /etc/apache2/conf-available/serve-cgi-bin.conf:
                 ScriptAlias /pilnapp/ /home/PiLN/app/
                 <Directory "/home/PiLN/app/">
