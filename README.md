@@ -1,9 +1,9 @@
 # PiLN
-Raspberry Pi Electric Kiln Controller
+Raspberry Pi Kiln Controller
 
-This is my first foray into Python, Git, RPi, etc
+This is my first foray into Python, Git, RPi, etc - Please be kind ;-)
 
-This is what I hope to accomplish:
+This is what I hoped to accomplish:
 
 - Create a PID controller in Python to control an electric kiln. The program takes target temperature, rate, hold time and interval seconds as inputs.
 - Daemonize it
@@ -11,10 +11,9 @@ This is what I hope to accomplish:
 - Chart the results of firing in real time with google charts
 - Wrap in all in a web front end
 
-Firing process code is almost complete and I have it pulling from and updating MySQL. Will be adding web frontend next.
+Many many many thanks to all those who post helpful tidbits out on the web - those on stackoverflow.com in particular. Way to many bits and pieces to give any particular credit, but I did use the init script from http://blog.scphillips.com/posts/2013/07/getting-a-python-script-to-run-in-the-background-as-a-service-on-boot/ for starting up the firing daemon.
 
-Need to fix:
-- Move log file name update inside daemon loop
+All comments, questions and suggestions welcome!
 
 Future improvements:
 - Better calculation of hold time. It should start once target temperature is reached.
