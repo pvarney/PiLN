@@ -15,6 +15,9 @@ Many many many thanks to all those who post helpful tidbits out on the web - tho
 
 All comments, questions and suggestions welcome!
 
+Bugs:
+- Having issues getting service to start on reboot. Currently starting manually.
+
 Future improvements:
 - Better calculation of hold time. It should start once target temperature is reached.
 - Crash/loss of power recovery
