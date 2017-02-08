@@ -46,7 +46,14 @@ Install:
 	    Require all granted	    
 	  </Directory>
 	  
-
+	Finally, I think I had to create these links to get the cgi modules enabled:
+	
+		cd /etc/apache2/mods-enabled
+		sudo ln -s ../mods-available/cgid.conf cgid.conf
+		sudo ln -s ../mods-available/cgid.load cgid.load
+		sudo ln -s ../mods-available/cgi.load cgi.load
+		
+		
 
 
 
