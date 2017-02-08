@@ -23,6 +23,7 @@ Future improvements:
 - Overheat shutdown
 
 Install:
+- Put files in /home/PiLN
 - Required Python modules (don't remember which are part of the standard distribution): cgi, MySQLdb, jinja2, sys, re, datetime, pymysql, json, time, logging, RPi.GPIO, Adafruit_MAX31855.MAX31855
 - Automatic startup:
 
