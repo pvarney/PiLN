@@ -1,7 +1,11 @@
 # PiLN
-Raspberry Pi Kiln Controller
+Web-based Raspberry Pi Kiln Controller
 
 This is my first foray into Python, Git, RPi, etc - Please be kind ;-)
+
+I have a good size 220v 45amp electric kiln that has the old "kiln-sitter" style temperature control with bi-metal on/off cycle adjustment knobs. I wanted something with much more precise temperature control for more consistent results and in order to do more work with glass. I started this project with an Arduino board but found the wifi connectivity and coding much too complicated. Being rather proficient in Perl, it seemed the RPi was a better solution. I wrote the original PID control in Perl, but then ported to Python since there seemed to be much more support for it on the RPi and since it was something I wanted to learn anyway.
+
+WARNING! Electricity and heat are dangerous! Please be careful and seek professional help if you are not experienced dealing with high voltage and heat. Use this code/information at your own risk.
 
 This is what I hoped to accomplish - and I think I did:
 
@@ -13,7 +17,7 @@ This is what I hoped to accomplish - and I think I did:
 
 Many many many thanks to all those who post helpful tidbits out on the web - those on stackoverflow.com in particular. Way to many bits and pieces to give any particular credit, but I did use the init script from http://blog.scphillips.com/posts/2013/07/getting-a-python-script-to-run-in-the-background-as-a-service-on-boot/ for starting up the firing daemon.
 
-All comments, questions and suggestions welcome!
+All comments, questions, contributions and suggestions welcome!
 
 Bugs/Needs:
 - Having issues getting service to start on reboot. Currently starting manually.
