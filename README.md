@@ -37,7 +37,7 @@ Install:
 		sudo ln -s /home/PiLN/images/piln.png /var/www/html/images/piln.png	
 		sudo ln -s /home/PiLN/style/style.css /var/www/html/style/style.css
 	
-  	Added the following ScriptAlias and Directory under <IfDefine ENABLE_USR_LIB_CGI_BIN> in /etc/apache2/conf-available/serve-cgi-bin.conf:
+  	Added the following ScriptAlias and Directory parameters under "IfDefine ENABLE_USR_LIB_CGI_BIN" in /etc/apache2/conf-available/serve-cgi-bin.conf:
 	
 		ScriptAlias /pilnapp/ /home/PiLN/app/	
 		  <Directory "/home/PiLN/app/">	  
