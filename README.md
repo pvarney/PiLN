@@ -3,7 +3,7 @@ Raspberry Pi Kiln Controller
 
 This is my first foray into Python, Git, RPi, etc - Please be kind ;-)
 
-This is what I hoped to accomplish - and did I think:
+This is what I hoped to accomplish - and I think I did:
 
 - Create a PID controller in Python to control an electric kiln. The program takes target temperature, rate, hold time and interval seconds as inputs.
 - Daemonize it
