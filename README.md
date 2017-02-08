@@ -1,5 +1,5 @@
 # PiLN
-Web-based Raspberry Pi Kiln Controller
+Web-based Raspberry Pi Kiln Control Application
 
 This is my first foray into Python, Git, RPi, etc - Please be kind ;-)
 
