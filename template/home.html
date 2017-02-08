@@ -1,0 +1,35 @@
+ <h4 style="display:inline;margin-left:60px">
+ <form method="post" style="display:inline;">
+  <button type="submit" name="page" value="new" class="btn-link">Create new profile</button>
+ </form>
+ </h4>
+ <br><br>
+ {{ message }}
+ <h2 style="display:inline;margin-left:60px">Profiles</h2><br>
+ <h3 style="display:inline;margin-left:60px"><i>Click a profile ID for additional actions</i></h3>
+ <table style="margin-left:60px">
+ <tr>
+  <th>State</th>
+  <th>ID</th>
+  <th>Notes</th>
+  <th>Last Run Date</th>
+ </tr>
+ {% for profile in profiles %}
+ <tr>
+  <td>{{ profile['state'] }}</td>
+  <td>
+   <form method="post">
+   <input type="hidden" name="run_id" value="{{ profile['run_id'] }}"/>
+   <input type="hidden" name="notes" value="{{ profile['notes'] }}"/>
+   <input type="hidden" name="state" value="{{ profile['state'] }}"/>
+   <button type="submit" name="page" value="view" class="btn-link">
+    {{ profile['run_id'] }}
+   </button>
+   </form>
+  </td>
+  <td>{{ profile['notes'] }}</td>
+  <td>{{ profile['lastdate'] }}</td>
+ </tr>
+ {% endfor %}
+ </table>
+

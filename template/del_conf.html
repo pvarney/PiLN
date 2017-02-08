@@ -1,0 +1,31 @@
+ <h4 style="display:inline;margin-left:60px">
+ <form method="post" style="display:inline;">
+  <input type="hidden" name="run_id" value="{{ run_id }}">
+  <button type="submit" name="page" value="delete" class="btn-link">Confirm Profile Delete</button>
+  &nbsp&nbsp&nbsp&nbsp
+  <button type="submit" name="page" value="" class="btn-link">Cancel</button>
+ </h4>
+ <br><br>
+ {{ message }}
+ <h2 style="display:inline;margin-left:60px">Segments for {{ state }} Firing Profile {{ run_id }}</h2><br>
+ <h5 style="display:inline;margin-left:60px">{{ notes }}</h3><br>
+ <table style="margin-left:60px">
+ <tr>
+  <th>Segment</th>
+  <th>Target Temp</th>
+  <th>Rate(degrees/hr)</th>
+  <th>Hold Minutes</th>
+  <th>Interval Seconds</th>
+ </tr>
+ {% for segment in segments %}
+ <tr>
+  <td>{{ segment['segment'] }}</td>
+  <td>{{ segment['set_temp'] }}</td>
+  <td>{{ segment['rate'] }}</td>
+  <td>{{ segment['hold_min'] }}</td>
+  <td>{{ segment['int_sec'] }}</td>
+ </tr>
+ {% endfor %}
+ </table>
+ </form>
+ <br>

@@ -1,0 +1,44 @@
+ <h4 style="display:inline;margin-left:60px">
+ <form method="post" style="display:inline;">
+ {% if state == 'Staged' %}
+  <input type="hidden" name="run_id" value="{{ run_id }}">
+  <button type="submit" name="page" value="saveupd" class="btn-link">Update Profile</button>
+ &nbsp&nbsp&nbsp&nbsp
+ {% endif %}
+  <button type="submit" name="page" value="savenew" class="btn-link">Save to New Profile</button>
+ &nbsp&nbsp&nbsp&nbsp
+  <button type="submit" name="page" value="" class="btn-link">Cancel</button>
+ </h4>
+ <br><br>
+ <h2 style="display:inline;margin-left:60px">Enter Profile Settings</h2><br><br>
+ <h4 style="display:inline;margin-left:60px">Notes: </h4>
+ <input style="border: none;border-bottom: 2px solid blue;" type="text" name="notes" value="{{ notes }}" size="60" ><br><br>
+ <table style="margin-left:60px">
+ <tr>
+  <th>Segment</th>
+  <th>Target Temp</th>
+  <th>Rate(degrees/hr)</th>
+  <th>Hold Minutes</th>
+  <th>Interval Seconds</th>
+ </tr>
+ {% for segment in segments %}
+ <tr>
+  <td>{{ loop.index }}</td>
+  <td><input style="border: none;border-bottom: 2px solid blue;" type="text" name="set_temp{{ loop.index }}" value="{{ segment['set_temp'] }}" size="4" ></td>
+  <td><input style="border: none;border-bottom: 2px solid blue;" type="text" name="rate{{ loop.index }}" value="{{ segment['rate'] }}" size="4" ></td>
+  <td><input style="border: none;border-bottom: 2px solid blue;" type="text" name="hold_min{{ loop.index }}" value="{{ segment['hold_min'] }}" size="4" ></td>
+  <td><input style="border: none;border-bottom: 2px solid blue;" type="text" name="int_sec{{ loop.index }}" value="{{ segment['int_sec'] }}" size="4" ></td>
+ </tr>
+ {% endfor %}
+ {% for segment in addsegs %}
+ <tr>
+  <td>{{ segment }}</td>
+  <td><input style="border: none;border-bottom: 2px solid blue;" type="text" name="set_temp{{ segment }}" size="4" ></td>
+  <td><input style="border: none;border-bottom: 2px solid blue;" type="text" name="rate{{ segment }}" size="4" ></td>
+  <td><input style="border: none;border-bottom: 2px solid blue;" type="text" name="hold_min{{ segment }}" size="4" ></td>
+  <td><input style="border: none;border-bottom: 2px solid blue;" type="text" name="int_sec{{ segment }}" size="4" ></td>
+ </tr>
+ {% endfor %}
+ </table>
+ </form>
+ <br>

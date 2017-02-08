@@ -1,0 +1,10 @@
+ <form id="myForm" method="post">
+  <input type="hidden" name="page" value="{{ target_page }}">
+  {% for name, value in params.iteritems() %}
+    <input type="hidden" name="{{ name }}" value="{{ value }}">
+  {% endfor %}
+ </form>
+ <h4 style="display:inline;margin-left:60px">{{ message }}</h4>
+ <script type="text/javascript">
+   setTimeout(function(){ document.getElementById('myForm').submit(); }, {{ timeout }} );
+ </script>

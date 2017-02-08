@@ -1,0 +1,126 @@
+<br>
+<h2 style="display:inline;margin-left:60px">Firing Chart for Profile {{ run_id }}</h2>
+
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">
+ 
+      // Load the Visualization API and the corechart package.
+      google.charts.load('current', {'packages':['line', 'corechart']});
+ 
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.charts.setOnLoadCallback(drawChart);
+ 
+      // Callback that creates and populates a data table,
+      // instantiates the pie chart, passes in the data and
+      // draws it.
+      function drawChart() {
+ 
+        var chartDiv = document.getElementById('chart_div');
+ 
+        // Set chart query
+        var options = {
+//          title: 'Firing Chart for Profile {{ run_id }}',
+//          titleTextStyle: { fontSize: 18, bold: true },
+//          legend: { position: 'top', fontSize: 14 },
+//          width: 800,
+//          height: 300,
+          animation: {
+            startup: true,
+            duration: 1000,
+            easing: 'out'
+          },
+          fontSize: 14,
+//          curveType: 'function',
+          explorer: {
+            axis: 'horizontal',
+            keepInBounds: true,
+            maxZoomIn: .1
+          },
+          series: {
+            0: {targetAxisIndex: 1},
+            1: {targetAxisIndex: 0},
+            2: {targetAxisIndex: 0},
+            3: {targetAxisIndex: 0}
+          },
+          vAxes: {
+            0: {
+              title: 'Temperature / PID Output',
+              viewWindowMode:'explicit',
+              viewWindow: { min:0 },
+              minValue: 0,
+              format: 'decimal',
+              textStyle: { fontSize: 14 },
+//              gridlines: { color: '#BBF' }
+            },
+            1: {
+              title: 'Segment',
+              viewWindowMode:'explicit',
+              viewWindow: { min:0 },
+              minValue: 0,
+              format: 'decimal',
+              textStyle: { fontSize: 14 },
+//              gridlines: { color: '#FBB' }
+            }
+          },
+          hAxis: {
+            format: 'MMM d HH:mm',
+            textStyle: { fontSize: 14 },
+            slantedText: true,
+            slantedTextAngle: 25,
+          },
+//          chartArea: {
+//            left: 120,
+//            top: 30,
+//            width: 800,
+//            height: 400
+//          }
+        };
+ 
+ 
+ 
+        // Instantiate and draw our chart, passing in some options.
+//        var chart = new google.charts.Line(chartDiv);
+        var chart = new google.visualization.LineChart(chartDiv);
+ 
+        function updateChart() {
+          var query = {
+            select: "select datetime, segment, set_temp, temp, pid_output from Firing where run_id={{ run_id }} order by datetime asc",
+            columns: [
+              {id:'datetime', label:'Time', type:'datetime'},
+              {id:'segment', label:'Firing Segment', type:'number'},
+              {id:'set_temp', label:'Target Temp', type:'number'},
+              {id:'temp', label:'Read Temp', type:'number'},
+              {id:'pid_output', label:'PID Output', type:'number'}
+            ]
+          };
+ 
+            $.ajax({
+              mimeType: 'application/json; charset=iso-8859-1',
+              url:  '/pilnapp/pygetdata.cgi',
+              data: JSON.stringify( query ),
+              contentType: "application/json",
+              dataType: 'json',
+              method: 'POST',
+              async: false,
+              success: function (response) {
+                var data = new google.visualization.DataTable(response);
+                chart.draw(data, options);
+                timer = setTimeout(updateChart, 60000);
+              },
+              error: function() {
+                $('#notification-bar').text('An error occurred');
+              }
+            });
+ 
+        };
+ 
+        updateChart();
+
+      }
+ 
+    </script>
+ 
+    <div id='chart_div' style='height: 500px; width: 1100px;'></div>

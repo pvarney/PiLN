@@ -1,0 +1,46 @@
+ <h4 style="display:inline;margin-left:60px">
+ <form method="post" style="display:inline;">
+  <button type="submit" name="page" value="" class="btn-link">Home</button>
+  &nbsp&nbsp&nbsp&nbsp
+  <input type="hidden" name="run_id" value="{{ run_id }}">
+  <input type="hidden" name="state" value="{{ state }}">
+  <input type="hidden" name="notes" value="{{ notes }}">
+  <button type="submit" name="page" value="editcopy" class="btn-link">Copy to New Profile</button>
+  &nbsp&nbsp&nbsp&nbsp
+  <input type="hidden" name="run_id" value="{{ run_id }}">
+  <input type="hidden" name="notes" value="{{ notes }}">
+  <button type="submit" name="page" value="del_conf" class="btn-link">Delete Profile</button>
+ </form>
+ </h4>
+ <br><br>
+ {{ message }}
+ <h2 style="display:inline;margin-left:60px">Segments for {{ state }} Firing Profile {{ run_id }}</h2><br>
+ <form method="post" style="display:inline;margin-left:60px">
+  <input type="hidden" name="run_id" value="{{ run_id }}">
+  <input type="hidden" name="state" value="{{ state }}">
+  <input type="text" name="notes" value="{{ notes }}" size="60">
+  <button type="submit" name="page" value="notes_save" class="btn-link">Update Notes</button>
+ </form>
+ <table style="margin-left:60px">
+ <tr>
+  <th>Segment</th>
+  <th>Target Temp</th>
+  <th>Rate(degrees/hr)</th>
+  <th>Hold Minutes</th>
+  <th>Interval Seconds</th>
+  <th>Last Start Time</th>
+  <th>Last End Time</th>
+ </tr>
+ {% for segment in segments %}
+ <tr>
+  <td>{{ segment['segment'] }}</td>
+  <td>{{ segment['set_temp'] }}</td>
+  <td>{{ segment['rate'] }}</td>
+  <td>{{ segment['hold_min'] }}</td>
+  <td>{{ segment['int_sec'] }}</td>
+  <td>{{ segment['start_time'] }}</td>
+  <td>{{ segment['end_time'] }}</td>
+ </tr>
+ {% endfor %}
+ </table>
+ <br>
