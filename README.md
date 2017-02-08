@@ -3,7 +3,7 @@ Raspberry Pi Kiln Controller
 
 This is my first foray into Python, Git, RPi, etc - Please be kind ;-)
 
-This is what I hoped to accomplish:
+This is what I hoped to accomplish - and did I think:
 
 - Create a PID controller in Python to control an electric kiln. The program takes target temperature, rate, hold time and interval seconds as inputs.
 - Daemonize it
@@ -21,3 +21,7 @@ Future improvements:
 - Interrupt handling to make sure relay is off
 - Add LCD display and appropriate code to update display (possibly more frequently than current code)
 - Overheat shutdown
+
+Install:
+- Required Python modules (don't remember which are part of the standard distribution): cgi, MySQLdb, jinja2, sys, re, datetime, pymysql, json, time, logging, RPi.GPIO, Adafruit_MAX31855.MAX31855
+- Automatic startup:
