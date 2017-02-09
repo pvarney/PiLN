@@ -22,7 +22,6 @@ All comments, questions, contributions and suggestions welcome!
 Bugs/Needs:
 - Having issues getting service to start on reboot. Currently starting manually.
 - Need to provide wiring diagram
-- Need to provide SQL table structure
 
 Future improvements:
 - Better calculation of hold time. It should start once target temperature is reached.
@@ -35,6 +34,7 @@ Install:
 - Hardware: Raspberry Pi 3, MAX31855 thermocouple interface from Adafruit (https://www.adafruit.com/product/269), High temperature (2372 F) type K thermocouple (http://r.ebay.com/JCMymQ), 2 x 40amp Solid State Relays (http://a.co/8PtFgIr).
 - Put files in /home/PiLN
 - Using Python, MySQL, Apache currently versions as of February 2017.
+- Use PiLN.sql to build MySQL table structures (I used phpmyadmin, but it's not required)
 - Required Python modules (don't remember which are part of the standard distribution): cgi, MySQLdb, jinja2, sys, re, datetime, pymysql, json, time, logging, RPi.GPIO, Adafruit_MAX31855.
 - Automatic startup:
 
