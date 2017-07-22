@@ -33,14 +33,14 @@ Future improvements:
 Install:
 - Hardware: Raspberry Pi 3, MAX31855 thermocouple interface from Adafruit (https://www.adafruit.com/product/269), High temperature (2372 F) type K thermocouple (http://r.ebay.com/JCMymQ), 2 x 40amp Solid State Relays (http://a.co/8PtFgIr).
 - Install files in /home:
-	cd /home
-	sudo git clone https://github.com/pvarney/PiLN
+		cd /home
+		sudo git clone https://github.com/pvarney/PiLN
 - Using Python, MySQL, Apache currently versions as of July 2017:
-	sudo apt-get install mysql-server
-	sudo apt-get install mysql-client php5-mysql
-	sudo apt-get install phpmyadmin
-	Edit /etc/apache2/apache2.conf and add "Include /etc/phpmyadmin/apache.conf"
-	sudo /etc/init.d/apache2 restart
+		sudo apt-get install mysql-server
+		sudo apt-get install mysql-client php5-mysql
+		sudo apt-get install phpmyadmin
+		Edit /etc/apache2/apache2.conf and add "Include /etc/phpmyadmin/apache.conf"
+		sudo /etc/init.d/apache2 restart
 - Use PiLN.sql to build MySQL table structures (I used phpmyadmin, but it's not required)
 - Required Python modules (don't remember which are part of the standard distribution): cgi, MySQLdb, jinja2, sys, re, datetime, pymysql, json, time, logging, RPi.GPIO, Adafruit_MAX31855.
 - Automatic startup:
