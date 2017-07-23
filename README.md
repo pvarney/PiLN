@@ -101,9 +101,13 @@ Install:
 		mysql> use PiLN;
 		mysql> source /home/PiLN/PiLN.sql;
 
-- To enable automatic startup of the daemon, create a link to the service file and start the service:
+- To enable automatic startup of the daemon (Had to do the copy/enable/delete/link in order to get systemctl enable to work):
 
-		sudo ln -s /home/PiLN/daemon/pilnfired.service pilnfired.service
+		cp /home/PiLN/daemon/pilnfired.service /etc/systemd/system/
+		sudo systemctl daemon-reload
+		sudo systemctl enable pilnfired
+		sudo rm /etc/systemd/system/pilnfired.service
+		sudo ln -s /home/PiLN/daemon/pilnfired.service /etc/systemd/system/pilnfired.service
 		sudo systemctl daemon-reload
 		sudo systemctl start pilnfired
 		sudo systemctl status pilnfired
