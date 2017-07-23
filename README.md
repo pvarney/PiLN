@@ -39,7 +39,7 @@ Install:
 		sudo git clone https://github.com/pvarney/PiLN
 		sudo mkdir /home/PiLN/log
 		
-- Install MySQL/PHPMyAdmin (not required):
+- Install MySQL/PHPMyAdmin (PHPMyAdmin not required):
 
 		sudo apt-get install mysql-server
 		sudo apt-get install mysql-client php5-mysql
