@@ -32,27 +32,24 @@ Future improvements:
 
 Install:
 - Hardware: Raspberry Pi 3, MAX31855 thermocouple interface from Adafruit (https://www.adafruit.com/product/269), High temperature (2372 F) type K thermocouple (http://r.ebay.com/JCMymQ), 2 x 40amp Solid State Relays (http://a.co/8PtFgIr).
-- Install files in /home:
+
+- Install PiLN files in /home and create log directory:
 
 		cd /home
 		sudo git clone https://github.com/pvarney/PiLN
+		sudo mkdir /home/PiLN/log
 		
-- Using Python, MySQL, Apache currently versions as of July 2017:
+- Install MySQL/PHPMyAdmin (not required):
 
 		sudo apt-get install mysql-server
 		sudo apt-get install mysql-client php5-mysql
 		sudo apt-get install phpmyadmin
-		Edit /etc/apache2/apache2.conf and add "Include /etc/phpmyadmin/apache.conf"
-		sudo /etc/init.d/apache2 restart
 		
-- Use PiLN.sql to build MySQL table structures (I used phpmyadmin, but it's not required)
-- Required Python modules (don't remember which are part of the standard distribution): cgi, MySQLdb, jinja2, sys, re, datetime, pymysql, json, time, logging, RPi.GPIO, Adafruit_MAX31855.
-- Automatic startup:
-
-		sudo ln -s /home/PiLN/daemon/pilnfired /etc/init.d/pilnfired		
-		sudo update-rc.d pilnfired defaults
+- Set up Apache for PHPMyAdmin if required. Edit /etc/apache2/apache2.conf and add the follow at the bottom of the file:
+	
+		Include /etc/phpmyadmin/apache.conf
 		
-- Apache/Web:
+- Set up directories/link for web page:
 
 		sudo mkdir /var/www/html/images	
 		sudo mkdir /var/www/html/style	
@@ -60,21 +57,56 @@ Install:
 		sudo ln -s /home/PiLN/images/piln.png /var/www/html/images/piln.png	
 		sudo ln -s /home/PiLN/style/style.css /var/www/html/style/style.css
 	
-  	Added the following ScriptAlias and Directory parameters under "IfDefine ENABLE_USR_LIB_CGI_BIN" in /etc/apache2/conf-available/serve-cgi-bin.conf:
+- Add the following ScriptAlias and Directory parameters under "IfDefine ENABLE_USR_LIB_CGI_BIN" in /etc/apache2/conf-available/serve-cgi-bin.conf:
 	
-		ScriptAlias /pilnapp/ /home/PiLN/app/	
-		  <Directory "/home/PiLN/app/">	  
-		    AllowOverride None	    
-		    Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch	    
-		    Require all granted	    
+		ScriptAlias /pilnapp/ /home/PiLN/app/
+		  <Directory "/home/PiLN/app/">
+		    AllowOverride None
+		    Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+		    Require all granted
 		  </Directory>
-	  
-	Finally, I had to create these links to get the cgi modules enabled:
+
+- Create links to enable cgi modules:
 	
 		cd /etc/apache2/mods-enabled
 		sudo ln -s ../mods-available/cgid.conf cgid.conf
 		sudo ln -s ../mods-available/cgid.load cgid.load
 		sudo ln -s ../mods-available/cgi.load cgi.load
+
+- Restart Apache:
+	
+		sudo systemctl daemon-reload
+		sudo systemctl restart apache2
+		
+- Install required Python packages:
+		
+		sudo apt-get install python-mysqldb
+		sudo apt-get install python-dev
+		
+- Install Adafruit MAX31855 Module:
+
+		cd ~
+		git clone https://github.com/adafruit/Adafruit_Python_MAX31855.git
+		cd Adafruit_Python_MAX31855
+		sudo python setup.py install		
+		
+- Required Python modules (separate installs were not required for these using the latest Raspian build as of July 2017): cgi, jinja2, sys, re, datetime, pymysql, json, time, logging, RPi.GPIO.
+
+- Log into the MySQL command line, create the database, create the user and give permissions, then load PiLN.sql to build table structures:
+
+		mysql -uroot -p
+		mysql> create database PiLN;
+		mysql> CREATE USER 'piln'@'localhost' IDENTIFIED BY 'p!lnp@ss';
+		mysql> GRANT ALL PRIVILEGES ON PiLN.* TO 'piln'@'localhost';
+		mysql> use PiLN;
+		mysql> source /home/PiLN/PiLN.sql;
+
+- To enable automatic startup of the daemon, create a link to the service file and start the service:
+
+		sudo ln -s /home/PiLN/daemon/pilnfired.service pilnfired.service
+		sudo systemctl daemon-reload
+		sudo systemctl start pilnfired
+		sudo systemctl status pilnfired
 		
 		
 
