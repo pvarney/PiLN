@@ -15,12 +15,11 @@ This is what I hoped to accomplish - and I think I did:
 - Chart the results of firing in real time with google charts
 - Wrap in all in a web front end
 
-Many many many thanks to all those who post helpful tidbits out on the web - those on stackoverflow.com in particular. Way to many bits and pieces to give any particular credit, but I did use the init script from http://blog.scphillips.com/posts/2013/07/getting-a-python-script-to-run-in-the-background-as-a-service-on-boot/ for starting up the firing daemon.
+Many many many thanks to all those who post helpful tidbits out on the web - those on stackoverflow.com in particular. Way to many bits and pieces to give any particular credit.
 
 All comments, questions, contributions and suggestions welcome!
 
 Bugs/Needs:
-- Having issues getting service to start on reboot. Currently starting manually.
 - Need to provide wiring diagram
 
 Future improvements:
@@ -111,7 +110,11 @@ Install:
 		sudo systemctl daemon-reload
 		sudo systemctl start pilnfired
 		sudo systemctl status pilnfired
-		
+	I also had to convert mysqld to start up from systemd so that I could set a "want" for pilnfired (mysqld.service file from https://gist.github.com/thomasfr/e4e4bb64352ee574334a):
+	
+		cp /home/PiLN/daemon/mysqld.service /etc/systemd/system/
+		sudo systemctl daemon-reload
+		sudo systemctl enable mysqld
 		
 
 
