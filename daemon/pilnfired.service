@@ -1,0 +1,12 @@
+[Unit]
+Description=PiLN Kiln Controller firing daemon
+Wants=mysqld.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/PiLN/daemon
+ExecStart=/home/PiLN/daemon/pilnfired.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
