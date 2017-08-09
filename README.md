@@ -81,6 +81,7 @@ Install:
 		
 		sudo apt-get install python-mysqldb
 		sudo apt-get install python-dev
+		sudo pip install PyMySQL
 		
 - Install Adafruit MAX31855 Module:
 
