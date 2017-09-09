@@ -30,7 +30,7 @@ Future improvements:
 - Overheat shutdown
 
 Install:
-- Hardware: Raspberry Pi 3, MAX31855 thermocouple interface from Adafruit (https://www.adafruit.com/product/269), High temperature (2372 F) type K thermocouple (http://r.ebay.com/JCMymQ), 2 x 40amp Solid State Relays (http://a.co/8PtFgIr).
+- Hardware: Raspberry Pi 3, MAX31855 thermocouple interface from Adafruit (https://www.adafruit.com/product/269), High temperature (2372 F) type K thermocouple (http://r.ebay.com/a4cHY1 - search for "kiln thermocouple"), 2 x 40amp Solid State Relays (http://a.co/8PtFgIr).
 
 - Install PiLN files in /home and create log directory:
 
