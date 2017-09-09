@@ -10,6 +10,9 @@ cursor = db.cursor()
 env = jinja2.Environment(loader=jinja2.FileSystemLoader(["/home/PiLN/template"])) 
 
 maxsegs = 20
+def_rate = 9999
+def_holdmin = 0
+def_intsec = 10
 
 form = cgi.FieldStorage()
 page = form.getfirst( "page", "" )
@@ -21,7 +24,10 @@ state = form.getfirst( "state", "" )
 
 if page == "view":
 
-  cursor.execute( "select segment, set_temp, rate, hold_min, int_sec, date_format(start_time, '%%m/%%d/%%Y %%H:%%i') as start_time, date_format(end_time, '%%m/%%d/%%Y %%H:%%i') as end_time from Segments where run_id='%s' order by segment;" % run_id )
+  cursor.execute( "select * from Profiles where run_id=%d;" % int(run_id) )
+  profile = cursor.fetchone()
+  
+  cursor.execute( "select segment, set_temp, rate, hold_min, int_sec, date_format(start_time, '%%m/%%d/%%Y %%H:%%i') as start_time, date_format(end_time, '%%m/%%d/%%Y %%H:%%i') as end_time from Segments where run_id=%d order by segment;" % int(run_id) )
   segments = cursor.fetchall()
   
   template = env.get_template( "header.html" ) 
@@ -31,18 +37,21 @@ if page == "view":
   
   viewtmpl="view_staged.html"
 
-  if state == "Completed" or state == "Running":
+  if state == "Completed":
     viewtmpl="view_comp.html"
+  elif state == "Running":
+    viewtmpl="view_run.html"
 
   template = env.get_template( viewtmpl ) 
   bdy = template.render(
     segments=segments,
+    profile=profile,
     run_id=run_id,
     state=state,
     notes=notes
   )
 
-  if state == "Completed" or state == "Running":
+  if state == "Completed" or state == "Running" or state == "Stopped":
     template = env.get_template( "chart.html" ) 
     bdy += template.render(
       run_id=run_id,
@@ -79,10 +88,20 @@ elif page == "new":
 
 elif page == "editcopy":
 
-  cursor.execute( "select segment, set_temp, rate, hold_min, int_sec from Segments where run_id='%s' order by segment;" % run_id )
+  cursor.execute( "select segment, set_temp, rate, hold_min, int_sec from Segments where run_id=%d order by segment;" % int(run_id) )
   segments = cursor.fetchall()
   curcount = cursor.rowcount
   addsegs = range(curcount + 1, maxsegs + 1)
+  lastseg = curcount + 1
+
+  sql = "select notes, p_param, i_param, d_param from Profiles where run_id=%d;" % int(run_id)
+  cursor.execute( sql )
+  profile = cursor.fetchone()
+
+  #if profile is not None:
+  #  Kp = float(profile['p_param'])
+  #  Ki = float(profile['i_param'])
+  #  Kd = float(profile['d_param'])
 
   template = env.get_template( "header.html" ) 
   hdr = template.render( 
@@ -93,7 +112,9 @@ elif page == "editcopy":
   bdy = template.render(
     segments=segments,
     addsegs=addsegs,
+    lastseg=lastseg,
     run_id=run_id,
+    profile=profile,
     state=state,
     notes=notes
   )
@@ -124,7 +145,7 @@ elif page == "run":
       target_page = "view",
       timeout = 5000,
       message = message,
-      params = { "run_id": run_id, "state":"Staged" }
+      params = { "run_id": run_id, "state":"Staged", "notes": notes }
     )
 
   else:
@@ -138,7 +159,7 @@ elif page == "run":
       target_page = "view",
       timeout = 1000,
       message = "Updating profile to running state...",
-      params = { "run_id": run_id, "state":"Running" }
+      params = { "run_id": run_id, "state":"Running", "notes": notes }
     )
 
   template = env.get_template( "footer.html" ) 
@@ -155,7 +176,13 @@ elif page == "savenew":
     title="Save Profile"
   )
 
-  sql = "insert into Profiles (state, notes) values ('%s', '%s')" % ( "Staged", notes )
+  p_param = form.getfirst( "Kp", 0.000 )
+  i_param = form.getfirst( "Ki", 0.000 )
+  d_param = form.getfirst( "Kd", 0.000 )
+
+  sql = "insert into Profiles (state, notes, p_param, i_param, d_param) values ('%s', '%s', %0.3f, %0.3f, %0.3f)" % \
+    ( "Staged", notes, float(p_param), float(i_param), float(d_param) )
+
   cursor.execute( sql )
   newrunid = cursor.lastrowid
   db.commit()
@@ -179,7 +206,14 @@ elif page == "savenew":
     hold_min = form.getfirst( "hold_min" + seg, "" )
     int_sec = form.getfirst( "int_sec" + seg, "" )
  
-    if set_temp != "" and rate != "" and hold_min != "" and int_sec != "":
+    if set_temp != "":
+
+      if rate == "":
+        rate = def_rate
+      if hold_min == "":
+        hold_min = def_holdmin 
+      if int_sec == "":
+        int_sec = def_intsec
 
       sql = "insert into Segments (run_id, segment, set_temp, rate, hold_min, int_sec) values ('%d', '%d', '%d', '%d', '%d', '%d')" % \
         ( int(newrunid), num, int(set_temp), int(rate), int(hold_min), int(int_sec) )
@@ -210,21 +244,44 @@ elif page == "saveupd":
 
   print hdr.encode('utf-8') + bdy.encode('utf-8') + ftr.encode('utf-8')
 
-  sql = "update Profiles set notes='%s' where run_id=%d" % ( notes, int(run_id) )
+  p_param = form.getfirst( "Kp", 0.000 )
+  i_param = form.getfirst( "Ki", 0.000 )
+  d_param = form.getfirst( "Kd", 0.000 )
+
+  lastseg = form.getfirst( "lastseg", 0 )
+
+  sql = "update Profiles set notes='%s', p_param=%0.3f, i_param=%0.3f, d_param=%0.3f where run_id=%d" % \
+    ( notes, float(p_param), float(i_param), float(d_param), int(run_id) )
   cursor.execute( sql )
  
   for num in range(1,maxsegs + 1):
-  
     seg = str(num)
     set_temp = form.getfirst( "set_temp" + seg, "" )
     rate = form.getfirst( "rate" + seg, "" )
     hold_min = form.getfirst( "hold_min" + seg, "" )
     int_sec = form.getfirst( "int_sec" + seg, "" )
- 
-    if set_temp != "" and rate != "" and hold_min != "" and int_sec != "":
 
-      sql = "update Segments set set_temp=%d, rate=%d, hold_min=%d, int_sec=%d where run_id=%d and segment=%d" % \
-        ( int(set_temp), int(rate), int(hold_min), int(int_sec), int(run_id), num )
+    if set_temp != "":
+      if rate == "":
+        rate = def_rate
+      if hold_min == "":
+        hold_min = def_holdmin 
+      if int_sec == "":
+        int_sec = def_intsec
+
+      if num >= int(lastseg):
+        sql = "insert into Segments (run_id, segment, set_temp, rate, hold_min, int_sec) values ('%d', '%d', '%d', '%d', '%d', '%d')" % \
+          ( int(run_id), num, int(set_temp), int(rate), int(hold_min), int(int_sec) )
+        cursor.execute( sql )
+
+      else:
+        sql = "update Segments set set_temp=%d, rate=%d, hold_min=%d, int_sec=%d where run_id=%d and segment=%d" % \
+          ( int(set_temp), int(rate), int(hold_min), int(int_sec), int(run_id), num )
+        cursor.execute( sql )
+
+    else:
+      sql = "delete from Segments where run_id=%d and segment=%d" % \
+        ( int(run_id), num )
       cursor.execute( sql )
 
   db.commit()
@@ -284,6 +341,31 @@ elif page == "delete":
 
 
 
+elif page == "stop":
+
+  template = env.get_template( "header.html" ) 
+  hdr = template.render( 
+    title="Stop Profile Run"
+  )
+ 
+  template = env.get_template( "reload.html" ) 
+  bdy = template.render(
+    target_page = "home",
+    timeout = 1000,
+    message = "Updating profile...",
+    params = { "run_id": run_id }
+  )
+
+  template = env.get_template( "footer.html" ) 
+  ftr = template.render()
+
+  cursor.execute( "update Profiles set state='Stopped' where run_id=%d" % int(run_id) )
+  db.commit()
+
+  print hdr.encode('utf-8') + bdy.encode('utf-8') + ftr.encode('utf-8')
+
+
+
 elif page == "notes_save":
 
   template = env.get_template( "header.html" ) 
@@ -312,7 +394,7 @@ elif page == "notes_save":
 
 else:
 
-  cursor.execute( "select state, run_id, notes, date_format(start_time, '%m/%d/%Y') as lastdate from Profiles order by FIELD(state,'Running','Staged','Completed');")
+  cursor.execute( "select state, run_id, notes, date_format(start_time, '%m/%d/%Y') as lastdate from Profiles order by FIELD(state,'Running','Staged','Stopped','Completed'), run_id desc;")
   profiles = cursor.fetchall()
   
   template = env.get_template( "header.html" ) 

@@ -46,6 +46,9 @@ CREATE TABLE IF NOT EXISTS `Profiles` (
 `run_id` int(11) NOT NULL,
   `state` varchar(25) NOT NULL DEFAULT 'Staged',
   `notes` text,
+  `p_param` float NOT NULL,
+  `i_param` float NOT NULL,
+  `d_param` float NOT NULL,
   `start_time` timestamp NULL DEFAULT NULL,
   `end_time` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=latin1;

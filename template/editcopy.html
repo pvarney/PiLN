@@ -2,6 +2,7 @@
  <form method="post" style="display:inline;">
  {% if state == 'Staged' %}
   <input type="hidden" name="run_id" value="{{ run_id }}">
+  <input type="hidden" name="lastseg" value="{{ lastseg }}">
   <button type="submit" name="page" value="saveupd" class="btn-link">Update Profile</button>
  &nbsp&nbsp&nbsp&nbsp
  {% endif %}
@@ -12,7 +13,11 @@
  <br><br>
  <h2 style="display:inline;margin-left:60px">Enter Profile Settings</h2><br><br>
  <h4 style="display:inline;margin-left:60px">Notes: </h4>
- <input style="border: none;border-bottom: 2px solid blue;" type="text" name="notes" value="{{ notes }}" size="60" ><br><br>
+ <input style="border: none;border-bottom: 2px solid blue;" type="text" name="notes" value="{{ profile['notes'] }}" size="60" ><br><br>
+ <h4 style="display:inline;margin-left:60px">PID Settings: </h4>&nbsp;&nbsp;
+ <h5 style="display:inline;">Proportional: </h5><input style="border: none;border-bottom: 2px solid blue;" type="text" name="Kp" value="{{ profile['p_param'] }}" size="4" >
+ <h5 style="display:inline;">&nbsp;&nbsp;&nbsp;&nbsp;Integral: </h5><input style="border: none;border-bottom: 2px solid blue;" type="text" name="Ki" value="{{ profile['i_param'] }}" size="4" >
+ <h5 style="display:inline;">&nbsp;&nbsp;&nbsp;&nbsp;Derivative: </h5><input style="border: none;border-bottom: 2px solid blue;" type="text" name="Kd" value="{{ profile['d_param'] }}" size="4" ><br><br>
  <table style="margin-left:60px">
  <tr>
   <th>Segment</th>

@@ -23,7 +23,9 @@
   <input type="hidden" name="state" value="{{ state }}">
   <input type="text" name="notes" value="{{ notes }}" size="60">
   <button type="submit" name="page" value="notes_save" class="btn-link">Update Notes</button>
- </form>
+ </form><br>
+ <h4 style="display:inline;margin-left:60px">PID Settings: </h4>&nbsp;&nbsp;
+ <h5 style="display:inline;">Proportional: {{ profile['p_param'] }}&nbsp;&nbsp;&nbsp;&nbsp;Integral: {{ profile['i_param'] }}&nbsp;&nbsp;&nbsp;&nbsp;Derivative: {{ profile['d_param'] }}</h5> 
  <table style="margin-left:60px">
  <tr>
   <th>Segment</th>
