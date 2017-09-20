@@ -15,7 +15,9 @@ This is what I hoped to accomplish - and I think I did:
 - Chart the results of firing in real time with google charts
 - Wrap in all in a web front end
 
-Many many many thanks to all those who post helpful tidbits out on the web - those on stackoverflow.com in particular. Way to many bits and pieces to give any particular credit.
+Many many many thanks to all those who post helpful tidbits out on the web - those on stackoverflow.com in particular. Way to many bits and pieces to give any particular credit. However, I did pull PID calculation code from the following to replace my own code that was iffy (what's math?). It was in C, but was an easy port to Python:
+
+http://brettbeauregard.com/blog/2011/04/improving-the-beginner%E2%80%99s-pid-reset-windup/
 
 All comments, questions, contributions and suggestions welcome!
 
