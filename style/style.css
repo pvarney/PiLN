@@ -22,7 +22,7 @@ table {
   font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
   border-collapse: collapse;
   border-spacing: 4;
-  margin-bottom: -4px;
+  margin-bottom: 0px;
 }
 
 td, th {
@@ -37,8 +37,9 @@ th {
   color: white;
 }
 
-#statusupd {
+#statusupd1, #statusupd2 {
   font-size:14px;
+  font-weight:bold;
   font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
 }
 

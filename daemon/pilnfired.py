@@ -22,7 +22,7 @@ StatFile = '/var/www/html/pilnstat.json'
 LogFile = time.strftime( AppDir + '/log/pilnfired.log' )
 L.basicConfig(
   filename=LogFile,
-  level=L.INFO,
+  level=L.DEBUG,
   format='%(asctime)s %(message)s'
 )
 
@@ -251,6 +251,7 @@ def Fire(RunID,Seg,TargetTmp,Rate,HoldMin,Window,Kp,Ki,Kd):
         GPIO.output(4,False) ## Turn off GPIO pin 7
 
       # Write statu to file for reporting on web page
+      L.debug( "Write status information to status file %s:" % StatFile )
       sfile = open(StatFile,"w+")
       sfile.write('{\n' +
         '  "proc_update_utime": "' + str(int(time.time())) + '",\n' +
@@ -259,7 +260,8 @@ def Fire(RunID,Seg,TargetTmp,Rate,HoldMin,Window,Kp,Ki,Kd):
         '  "run_segment": "'       + str(Seg)              + '",\n' +
         '  "ramptemp": "'          + str(int(RampTmp))     + '",\n' +
         '  "targettemp": "'        + str(int(TargetTmp))   + '",\n' +
-        '  "segtime": "'           + str(int(RemainTime))  + '"\n' +
+        '  "status": "'            + str(RunState)         + '",\n' +
+        '  "segtime": "'           + str(RemainTime)       + '"\n'  +
         '}\n'
       )
       sfile.close()
@@ -304,6 +306,7 @@ while 1:
   ReadITmp  = CtoF(ReadCITmp)
 
   # Write statu to file for reporting on web page
+  L.debug( "Write status information to status file %s:" % StatFile )
   sfile = open(StatFile,"w+")
   sfile.write('{\n' +
     '  "proc_update_utime": "' + str(int(time.time())) + '",\n' +
@@ -311,6 +314,7 @@ while 1:
     '  "run_profile": "none",\n' +
     '  "run_segment": "n/a",\n' +
     '  "ramptemp": "n/a",\n' +
+    '  "status": "n/a",\n' +
     '  "targettemp": "n/a"\n' +
     '}\n'
   )
