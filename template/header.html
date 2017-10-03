@@ -6,12 +6,45 @@ Content-type:text/html
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
  <link rel="stylesheet" type="text/css" href="/style/style.css">
  <title>PiLN Raspberry Pi Kiln Controller - {{ title }}</title>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script>
+    function loadProcStat(){
+      $.getJSON("/pilnstat.json",
+        function(data1) {
+          $.getJSON("pygetdata.cgi",
+            function(data2) {
+              if ( parseInt(data1.proc_update_utime,10) < ( parseInt(data2.unix_timestamp,10) - 20 )) {
+                $('#statusupd1').html('WARNING: Firing process daemon is DOWN' );
+                $('#statusupd2').html('&nbsp;' );
+              } else {
+                if ( data1.run_profile === 'none' ) {
+                  $('#statusupd1').html('Firing Process Daemon: IDLE' );
+                  $('#statusupd2').html('Current Temp: ' + data1.readtemp + '&deg; F' );
+                } else {
+                  $('#statusupd1').html('Firing Process Daemon: ACTIVE with Run ID ' + data1.run_profile + ', Segment ' + data1.run_segment + ', Status: ' + data1.status );
+                  $('#statusupd2').html('Current Temp: ' + data1.readtemp + '&deg; F, Ramp Temp: ' + data1.ramptemp + '&deg; F, Target Temp: ' + data1.targettemp + '&deg; F, Segment Time Remaining: ' + data1.segtime );
+                }
+              }
+          });
+      });
+      setTimeout(loadProcStat,5000);
+    }
+  
+    $(document).ready(function(){
+      loadProcStat();
+    });
+  
+  </script>
 </head>
 <body>
  <table style="width:100%" cellpadding=0 cellspacing=0>
   <tr>
-   <td style="border:0px;padding:0px;background-image:url(/images/hdrback.png);background-repeat:repeat-x;">
+   <td style="border:0px;padding:0px;margin: 0px;border-collapse: collapse;background-image:url(/images/hdrback.png);background-repeat:repeat-x;" width=300>
      <a href="home.cgi"><img src="/images/piln.png" /></a>
+   </td>
+   <td style="border:0px;padding:0px;margin: 0px;border-collapse: collapse;background-image:url(/images/hdrback.png);background-repeat:repeat-x;">
+    <div id='statusupd1'>Updating Status...</div><br>
+    <div id='statusupd2'>&nbsp;</div>
    </td>
   </tr>
  </table>

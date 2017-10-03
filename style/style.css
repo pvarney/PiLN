@@ -22,6 +22,7 @@ table {
   font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
   border-collapse: collapse;
   border-spacing: 4;
+  margin-bottom: 0px;
 }
 
 td, th {
@@ -34,6 +35,12 @@ th {
   padding-bottom: 4px;
   background-color: #990000;
   color: white;
+}
+
+#statusupd1, #statusupd2 {
+  font-size:14px;
+  font-weight:bold;
+  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
 }
 
 tr:nth-child(even){background-color: #f2f2f2}

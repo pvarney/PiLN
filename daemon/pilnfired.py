@@ -15,6 +15,9 @@ SQLPass = 'p!lnp@ss'
 SQLDB   = 'PiLN'
 AppDir  = '/home/PiLN'
 
+#Status File
+StatFile = '/var/www/html/pilnstat.json'
+
 # Set up logging
 LogFile = time.strftime( AppDir + '/log/pilnfired.log' )
 L.basicConfig(
@@ -39,7 +42,6 @@ Sensor = MAX31855.MAX31855(CLK, CS, DO)
 # Pin setup for relay
 GPIO.setup(4, GPIO.OUT) ## Setup GPIO Pin 7 to OUT
 GPIO.output(4,False) ## Turn off GPIO pin 7
-
 
 # Celsius to Fahrenheit
 def CtoF(c):
@@ -122,8 +124,8 @@ def Update ( SetPoint, ProcValue, IMax, IMin, Window, Kp, Ki, Kd ):
 # Loop to run each segment of the firing profile
 def Fire(RunID,Seg,TargetTmp,Rate,HoldMin,Window,Kp,Ki,Kd):
 
-  L.debug( "Entering Fire function with parameters RunID:%d, Seg:%d, TargetTmp:%d, Rate:%d," % ( RunID, Seg, TargetTmp, Rate ))
-  L.debug( "  HoldMin:%d, Window:%d" % ( HoldMin, Window ))
+  L.info( "Entering Fire function with parameters RunID:%d, Seg:%d, TargetTmp:%d, Rate:%d," % ( RunID, Seg, TargetTmp, Rate ))
+  L.info( "  HoldMin:%d, Window:%d" % ( HoldMin, Window ))
 
   global SegCompStat
 
@@ -173,7 +175,7 @@ def Fire(RunID,Seg,TargetTmp,Rate,HoldMin,Window,Kp,Ki,Kd):
         if ( ( TargetTmp - ReadTmp <= TargetTmp * 0.006 ) or ( ReadTmp >= TargetTmp ) ) and ReadTrg == 0:
           ReadTrg = 1
           EndSec = int(time.time()) + ( HoldMin * 60 )
-          L.debug( "Set temp reached - End seconds set to %d" % EndSec )
+          L.info( "Set temp reached - End seconds set to %d" % EndSec )
           if RampTrg == 1:
             RunState = "Ramp complete/target temp reached"
           else:
@@ -194,7 +196,7 @@ def Fire(RunID,Seg,TargetTmp,Rate,HoldMin,Window,Kp,Ki,Kd):
         if ( ( ReadTmp - TargetTmp <= TargetTmp * 0.006 ) or ( ReadTmp <= TargetTmp ) ) and ReadTrg == 0:
           ReadTrg = 1
           EndSec = int(time.time()) + ( HoldMin * 60 )
-          L.debug( "Set temp reached - End seconds set to %d" % EndSec )
+          L.info( "Set temp reached - End seconds set to %d" % EndSec )
           if RampTrg == 1:
             RunState = "Ramp complete/target temp reached"
           else:
@@ -218,9 +220,9 @@ def Fire(RunID,Seg,TargetTmp,Rate,HoldMin,Window,Kp,Ki,Kd):
 #        if TmpDif < 0:
 #          RunState = 2
 
-        L.debug( "First pass of firing loop - TargetTmp:%0.2f, StartTmp:%0.2f, RampTmp:%0.2f, TmpDif:%0.2f," %
+        L.info( "First pass of firing loop - TargetTmp:%0.2f, StartTmp:%0.2f, RampTmp:%0.2f, TmpDif:%0.2f," %
           ( TargetTmp, StartTmp, RampTmp, TmpDif ))
-        L.debug( "  RampMin:%0.2f, Steps:%d, StepTmp:%0.2f, Window:%d, StartSec:%d, EndSec:%d" %
+        L.info( "  RampMin:%0.2f, Steps:%d, StepTmp:%0.2f, Window:%d, StartSec:%d, EndSec:%d" %
           ( RampMin, Steps, StepTmp, Window, StartSec, EndSec ) )
     
       #Output = Update(RampTmp,ReadTmp,50000,-50000,Window,Kp,Ki,Kd)
@@ -247,6 +249,22 @@ def Fire(RunID,Seg,TargetTmp,Rate,HoldMin,Window,Kp,Ki,Kd):
       if Output < 100:
         L.debug("==>Relay Off")
         GPIO.output(4,False) ## Turn off GPIO pin 7
+
+      # Write statu to file for reporting on web page
+      L.debug( "Write status information to status file %s:" % StatFile )
+      sfile = open(StatFile,"w+")
+      sfile.write('{\n' +
+        '  "proc_update_utime": "' + str(int(time.time())) + '",\n' +
+        '  "readtemp": "'          + str(int(ReadTmp))     + '",\n' +
+        '  "run_profile": "'       + str(RunID)            + '",\n' +
+        '  "run_segment": "'       + str(Seg)              + '",\n' +
+        '  "ramptemp": "'          + str(int(RampTmp))     + '",\n' +
+        '  "targettemp": "'        + str(int(TargetTmp))   + '",\n' +
+        '  "status": "'            + str(RunState)         + '",\n' +
+        '  "segtime": "'           + str(RemainTime)       + '"\n'  +
+        '}\n'
+      )
+      sfile.close()
 
       L.debug("Writing stats to Firing DB table...")
       SQL = "INSERT INTO Firing (run_id, segment, datetime, set_temp, temp, int_temp, pid_output) VALUES ( '%d', '%d', '%s', '%.2f', '%.2f', '%.2f', '%.2f' )" % ( RunID, Seg, time.strftime('%Y-%m-%d %H:%M:%S'), RampTmp, ReadTmp, ReadITmp, Output )
@@ -280,6 +298,36 @@ L.info("===START PiLN Firing Daemon===")
 L.info("Polling for 'Running' firing profiles...")
 
 while 1:
+
+  # Get temp
+  ReadCTmp  = Sensor.readTempC()
+  ReadTmp   = CtoF(ReadCTmp)
+  ReadCITmp = Sensor.readInternalC()
+  ReadITmp  = CtoF(ReadCITmp)
+
+  # Write statu to file for reporting on web page
+  L.debug( "Write status information to status file %s:" % StatFile )
+  sfile = open(StatFile,"w+")
+  sfile.write('{\n' +
+    '  "proc_update_utime": "' + str(int(time.time())) + '",\n' +
+    '  "readtemp": "'          + str(int(ReadTmp))     + '",\n' +
+    '  "run_profile": "none",\n' +
+    '  "run_segment": "n/a",\n' +
+    '  "ramptemp": "n/a",\n' +
+    '  "status": "n/a",\n' +
+    '  "targettemp": "n/a"\n' +
+    '}\n'
+  )
+  sfile.close()
+
+#{
+#  "proc_update_utime": "1506396470",
+#  "readtemp": "145",
+#  "run_profile": "none",
+#  "run_segment": "n/a",
+#  "targettemp": "n/a"
+#}
+
 
   # Check for 'Running' firing profile
   SQLConn = MySQLdb.connect(SQLHost, SQLUser, SQLPass, SQLDB);
@@ -351,7 +399,7 @@ while 1:
           L.error("DB Update failed!")
 
     if SegCompStat == 1:
-        L.debug("Profile stopped - Not updating profile end time")
+        L.info("Profile stopped - Not updating profile end time")
 
     else:
       EndTime=time.strftime('%Y-%m-%d %H:%M:%S')
@@ -370,3 +418,4 @@ while 1:
 
   SQLConn.close()
   time.sleep(2)
+
