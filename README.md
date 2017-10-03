@@ -34,6 +34,16 @@ Future improvements:
 Install:
 - Hardware: Raspberry Pi 3, MAX31855 thermocouple interface from Adafruit (https://www.adafruit.com/product/269), High temperature (2372 F) type K thermocouple (http://r.ebay.com/a4cHY1 - search for "kiln thermocouple"), 2 x 40amp Solid State Relays (http://a.co/8PtFgIr).
 
+- Pin-Out:
+
+		MAX31855+:	3.3v, Pin 1
+		MAX31855-:	GROUND, Pin 6
+		MAX31855 CLK:	GPIO 25, Pin 22
+		MAX31855 CS:	GPIO 24, Pin 18
+		MAX31855 DO:	GPIO 18, Pin 12
+		RELAY+: 	GPIO 4, Pin 7
+		RELAY-:		GROUND, Pin 5
+		
 - Install PiLN files in /home and create log directory:
 
 		cd /home
@@ -119,7 +129,8 @@ Install:
 		sudo systemctl daemon-reload
 		sudo systemctl enable mysqld
 		
-
+- Tuning: I spent a while adjusting the PID parameters to get the best results and am still tuning. Your tuning parameters will depend on your specific application, but I used the following which might be a good starting point:
+	Proportional: 0.85    Integral: 0.04    Derivative: 0.0
 
 
   
