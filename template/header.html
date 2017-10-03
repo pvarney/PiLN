@@ -14,12 +14,15 @@ Content-type:text/html
           $.getJSON("pygetdata.cgi",
             function(data2) {
               if ( parseInt(data1.proc_update_utime,10) < ( parseInt(data2.unix_timestamp,10) - 20 )) {
-                $('#statusupd').html('WARNING: Firing process daemon is DOWN' );
+                $('#statusupd1').html('WARNING: Firing process daemon is DOWN' );
+                $('#statusupd2').html('&nbsp;' );
               } else {
                 if ( data1.run_profile === 'none' ) {
-                  $('#statusupd').html('Current Temp: ' + data1.readtemp + '&deg; F&nbsp;&nbsp;&nbsp;Firing Process Daemon: IDLE' );
+                  $('#statusupd1').html('Firing Process Daemon: IDLE' );
+                  $('#statusupd2').html('Current Temp: ' + data1.readtemp + '&deg; F' );
                 } else {
-                  $('#statusupd').html('Current Temp: ' + data1.readtemp + '&deg; F&nbsp;&nbsp;&nbsp;Firing Process Daemon: ACTIVE with Run ID ' + data1.run_profile + ', Segment ' + data1.run_segment + ', Ramp Temp ' + data1.ramptemp + '&deg; F, Target Temp ' + data1.targettemp + '&deg; F, Segment Time Remaining: ' + data1.segtime );
+                  $('#statusupd1').html('Firing Process Daemon: ACTIVE with Run ID ' + data1.run_profile + ', Segment ' + data1.run_segment + ', Status: ' + data1.status );
+                  $('#statusupd2').html('Current Temp: ' + data1.readtemp + '&deg; F, Ramp Temp: ' + data1.ramptemp + '&deg; F, Target Temp: ' + data1.targettemp + '&deg; F, Segment Time Remaining: ' + data1.segtime );
                 }
               }
           });
@@ -36,15 +39,12 @@ Content-type:text/html
 <body>
  <table style="width:100%" cellpadding=0 cellspacing=0>
   <tr>
-   <td style="border:0px;padding:0px;background-image:url(/images/hdrback.png);background-repeat:repeat-x;">
+   <td style="border:0px;padding:0px;margin: 0px;border-collapse: collapse;background-image:url(/images/hdrback.png);background-repeat:repeat-x;" width=300>
      <a href="home.cgi"><img src="/images/piln.png" /></a>
    </td>
-  </tr>
- </table>
- <table style="width:100%" cellpadding=0 cellspacing=0>
-  <tr>
-   <td style="border:0px;padding:8px;margin:0;border-collapse: collapse;border-spacing:0;background-color: #990000;color: white;">
-    <div id='statusupd'>Updating...</div>
+   <td style="border:0px;padding:0px;margin: 0px;border-collapse: collapse;background-image:url(/images/hdrback.png);background-repeat:repeat-x;">
+    <div id='statusupd1'>Updating Status...</div><br>
+    <div id='statusupd2'>&nbsp;</div>
    </td>
   </tr>
  </table>
