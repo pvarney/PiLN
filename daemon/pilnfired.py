@@ -2,11 +2,29 @@
 
 
 import time
+import math
 import logging as L
 import sys
 import MySQLdb
 import RPi.GPIO as GPIO
 import Adafruit_MAX31855.MAX31855 as MAX31855
+import RPi.GPIO as GPIO
+from RPLCD import CharLCD
+
+#Set up LCD
+lcd = CharLCD(pin_rs=17, pin_rw=None, pin_e=27, pins_data=[12, 16, 20, 21],
+              numbering_mode=GPIO.BCM,
+              cols=20, rows=4, dotsize=8,
+              auto_linebreaks=False)
+
+lcd.create_char(1, [0b01100,
+                   0b10010,
+                   0b10010,
+                   0b01100,
+                   0b00000,
+                   0b00000,
+                   0b00000,
+                   0b00000])
 
 # Set up MySQL Connection
 SQLHost = '127.0.0.1'
@@ -32,6 +50,7 @@ L.basicConfig(
 ITerm = 0.0
 LastProcVal = 0.0
 SegCompStat = 0
+LastTmp  = 0.0
 
 # MAX31855 Pins/Setup
 CLK = 25
@@ -133,6 +152,7 @@ def Fire(RunID,Seg,TargetTmp,Rate,HoldMin,Window,Kp,Ki,Kd):
   RampMin  = 0.0
   RampTmp  = 0.0
   ReadTmp  = 0.0
+  LastTmp  = 0.0
   StartTmp = 0.0
   TmpDif   = 0.0
   Steps    = 0.0
@@ -152,10 +172,13 @@ def Fire(RunID,Seg,TargetTmp,Rate,HoldMin,Window,Kp,Ki,Kd):
       NextSec = time.time() + Window
 
       # Get temp
+      LastTmp   = ReadTmp
       ReadCTmp  = Sensor.readTempC()
       ReadTmp   = CtoF(ReadCTmp)
       ReadCITmp = Sensor.readInternalC()
       ReadITmp  = CtoF(ReadCITmp)
+      if math.isnan(ReadTmp):
+        ReadTmp = LastTmp
 
       if RampTrg == 0:
         RampTmp += StepTmp
@@ -266,6 +289,16 @@ def Fire(RunID,Seg,TargetTmp,Rate,HoldMin,Window,Kp,Ki,Kd):
       )
       sfile.close()
 
+      lcd.clear()
+      lcd.cursor_pos = (0, 0)
+      lcd.write_string(u'Profile ' + str(RunID) + ',Seg ' + str(Seg) )
+      lcd.cursor_pos = (1, 0)
+      lcd.write_string(u'Stat ' + str(RunState)[0:14] )
+      lcd.cursor_pos = (2, 0)
+      lcd.write_string(u'Tmp ' +  str(int(ReadTmp)) + '\x01,Ramp ' + str(int(RampTmp)) + '\x01' )
+      lcd.cursor_pos = (3, 0)
+      lcd.write_string(u'Trgt ' + str(int(TargetTmp)) + '\x01,Tm ' + str(RemainTime) )
+
       L.debug("Writing stats to Firing DB table...")
       SQL = "INSERT INTO Firing (run_id, segment, datetime, set_temp, temp, int_temp, pid_output) VALUES ( '%d', '%d', '%s', '%.2f', '%.2f', '%.2f', '%.2f' )" % ( RunID, Seg, time.strftime('%Y-%m-%d %H:%M:%S'), RampTmp, ReadTmp, ReadITmp, Output )
       try:
@@ -297,125 +330,147 @@ def Fire(RunID,Seg,TargetTmp,Rate,HoldMin,Window,Kp,Ki,Kd):
 L.info("===START PiLN Firing Daemon===")
 L.info("Polling for 'Running' firing profiles...")
 
-while 1:
+try:
 
-  # Get temp
-  ReadCTmp  = Sensor.readTempC()
-  ReadTmp   = CtoF(ReadCTmp)
-  ReadCITmp = Sensor.readInternalC()
-  ReadITmp  = CtoF(ReadCITmp)
-
-  # Write statu to file for reporting on web page
-  L.debug( "Write status information to status file %s:" % StatFile )
-  sfile = open(StatFile,"w+")
-  sfile.write('{\n' +
-    '  "proc_update_utime": "' + str(int(time.time())) + '",\n' +
-    '  "readtemp": "'          + str(int(ReadTmp))     + '",\n' +
-    '  "run_profile": "none",\n' +
-    '  "run_segment": "n/a",\n' +
-    '  "ramptemp": "n/a",\n' +
-    '  "status": "n/a",\n' +
-    '  "targettemp": "n/a"\n' +
-    '}\n'
-  )
-  sfile.close()
-
-#{
-#  "proc_update_utime": "1506396470",
-#  "readtemp": "145",
-#  "run_profile": "none",
-#  "run_segment": "n/a",
-#  "targettemp": "n/a"
-#}
-
-
-  # Check for 'Running' firing profile
-  SQLConn = MySQLdb.connect(SQLHost, SQLUser, SQLPass, SQLDB);
-  SQLCur  = SQLConn.cursor()
-  RowsCnt = SQLCur.execute("select * from Profiles where state='Running'")
-
-  if RowsCnt > 0:
-    Data = SQLCur.fetchone()
-    RunID = Data[0]
-    Kp = float(Data[3])
-    Ki = float(Data[4])
-    Kd = float(Data[5])
-    L.info("Run ID %d is active - starting firing profile" % RunID)
-
-    StTime=time.strftime('%Y-%m-%d %H:%M:%S')
-    L.debug("Update profile %d start time to %s" % ( RunID, StTime ) )
-    SQL = "UPDATE Profiles SET start_time='%s' where run_id=%d" % ( StTime, RunID )
-    try:
-      SQLCur.execute(SQL)
-      SQLConn.commit()
-    except:
-      SQLConn.rollback()
-      L.error("DB Update failed!")
-
-    # Get segments
-    L.info("Get segments for run ID %d" % RunID)
-    SQL="select * from Segments where run_id=%d" % RunID
-    SQLCur.execute(SQL)
-    ProfSegs = SQLCur.fetchall()
-
-    for Row in ProfSegs:
-      RunID = Row[0]
-      Seg = Row[1]
-      TargetTmp = Row[2]
-      Rate = Row[3]
-      HoldMin = Row[4]
-      Window = Row[5]
-
-      if SegCompStat == 1:
-        L.debug("Profile stopped - skipping segment %d" % Seg)
-
-      else:
-        L.info( "Run ID %d, segment %d parameters: Target Temp: %0.2f, Rate: %0.2f," %
-          ( RunID, Seg, TargetTmp, Rate ))
-        L.info( "  Hold Minutes: %d, Window Seconds: %d" %
-          ( HoldMin, Window ))
-
-        StTime=time.strftime('%Y-%m-%d %H:%M:%S')
-        L.debug("Update run id %d, segment %d start time to %s" % ( RunID, Seg, StTime ) )
-        SQL = "UPDATE Segments SET start_time='%s' where run_id=%d and segment=%d" % ( StTime, RunID, Seg )
-        try:
-          SQLCur.execute(SQL)
-          SQLConn.commit()
-        except:
-          SQLConn.rollback()
-          L.error("DB Update failed!")
+  while 1:
   
-        Fire(RunID,Seg,TargetTmp,Rate,HoldMin,Window,Kp,Ki,Kd)
-        GPIO.output(4,False) ## Turn off GPIO pin 7
+    # Get temp
+    ReadCTmp  = Sensor.readTempC()
+    ReadTmp   = CtoF(ReadCTmp)
+    ReadCITmp = Sensor.readInternalC()
+    ReadITmp  = CtoF(ReadCITmp)
+    if math.isnan(ReadTmp):
+      ReadTmp = LastTmp
   
-        EndTime=time.strftime('%Y-%m-%d %H:%M:%S')
-        L.debug("Update run id %d, segment %d end time to %s" % ( RunID, Seg, EndTime ) )
-        SQL = "UPDATE Segments SET end_time='%s' where run_id=%d and segment=%d" % ( EndTime, RunID, Seg )
-        try:
-          SQLCur.execute(SQL)
-          SQLConn.commit()
-        except:
-          SQLConn.rollback()
-          L.error("DB Update failed!")
-
-    if SegCompStat == 1:
-        L.info("Profile stopped - Not updating profile end time")
-
-    else:
-      EndTime=time.strftime('%Y-%m-%d %H:%M:%S')
-      L.debug("Update profile end time to %s and state to 'Completed' for run id %d" % ( EndTime, RunID ) )
-      SQL = "UPDATE Profiles SET end_time='%s', state='Completed' where run_id=%d" % ( EndTime, RunID )
+    # Write statu to file for reporting on web page
+    L.debug( "Write status information to status file %s:" % StatFile )
+    sfile = open(StatFile,"w+")
+    sfile.write('{\n' +
+      '  "proc_update_utime": "' + str(int(time.time())) + '",\n' +
+      '  "readtemp": "'          + str(int(ReadTmp))     + '",\n' +
+      '  "run_profile": "none",\n' +
+      '  "run_segment": "n/a",\n' +
+      '  "ramptemp": "n/a",\n' +
+      '  "status": "n/a",\n' +
+      '  "targettemp": "n/a"\n' +
+      '}\n'
+    )
+    sfile.close()
+  
+    lcd.clear()
+    lcd.cursor_pos = (0, 0)
+    lcd.write_string(u'IDLE')
+    lcd.cursor_pos = (2, 0)
+    lcd.write_string(u'Temp ' +  str(int(ReadTmp)) + '\x01')
+  
+  #{
+  #  "proc_update_utime": "1506396470",
+  #  "readtemp": "145",
+  #  "run_profile": "none",
+  #  "run_segment": "n/a",
+  #  "targettemp": "n/a"
+  #}
+  
+  
+    # Check for 'Running' firing profile
+    SQLConn = MySQLdb.connect(SQLHost, SQLUser, SQLPass, SQLDB);
+    SQLCur  = SQLConn.cursor()
+    RowsCnt = SQLCur.execute("select * from Profiles where state='Running'")
+  
+    if RowsCnt > 0:
+      Data = SQLCur.fetchone()
+      RunID = Data[0]
+      Kp = float(Data[3])
+      Ki = float(Data[4])
+      Kd = float(Data[5])
+      L.info("Run ID %d is active - starting firing profile" % RunID)
+  
+      StTime=time.strftime('%Y-%m-%d %H:%M:%S')
+      L.debug("Update profile %d start time to %s" % ( RunID, StTime ) )
+      SQL = "UPDATE Profiles SET start_time='%s' where run_id=%d" % ( StTime, RunID )
       try:
         SQLCur.execute(SQL)
         SQLConn.commit()
       except:
         SQLConn.rollback()
         L.error("DB Update failed!")
+  
+      # Get segments
+      L.info("Get segments for run ID %d" % RunID)
+      SQL="select * from Segments where run_id=%d" % RunID
+      SQLCur.execute(SQL)
+      ProfSegs = SQLCur.fetchall()
+  
+      for Row in ProfSegs:
+        RunID = Row[0]
+        Seg = Row[1]
+        TargetTmp = Row[2]
+        Rate = Row[3]
+        HoldMin = Row[4]
+        Window = Row[5]
+  
+        if SegCompStat == 1:
+          L.debug("Profile stopped - skipping segment %d" % Seg)
+  
+        else:
+          L.info( "Run ID %d, segment %d parameters: Target Temp: %0.2f, Rate: %0.2f," %
+            ( RunID, Seg, TargetTmp, Rate ))
+          L.info( "  Hold Minutes: %d, Window Seconds: %d" %
+            ( HoldMin, Window ))
+  
+          StTime=time.strftime('%Y-%m-%d %H:%M:%S')
+          L.debug("Update run id %d, segment %d start time to %s" % ( RunID, Seg, StTime ) )
+          SQL = "UPDATE Segments SET start_time='%s' where run_id=%d and segment=%d" % ( StTime, RunID, Seg )
+          try:
+            SQLCur.execute(SQL)
+            SQLConn.commit()
+          except:
+            SQLConn.rollback()
+            L.error("DB Update failed!")
+    
+          Fire(RunID,Seg,TargetTmp,Rate,HoldMin,Window,Kp,Ki,Kd)
+          GPIO.output(4,False) ## Turn off GPIO pin 7
+    
+          EndTime=time.strftime('%Y-%m-%d %H:%M:%S')
+          L.debug("Update run id %d, segment %d end time to %s" % ( RunID, Seg, EndTime ) )
+          SQL = "UPDATE Segments SET end_time='%s' where run_id=%d and segment=%d" % ( EndTime, RunID, Seg )
+          try:
+            SQLCur.execute(SQL)
+            SQLConn.commit()
+          except:
+            SQLConn.rollback()
+            L.error("DB Update failed!")
+  
+      if SegCompStat == 1:
+          L.info("Profile stopped - Not updating profile end time")
+  
+      else:
+        EndTime=time.strftime('%Y-%m-%d %H:%M:%S')
+        L.debug("Update profile end time to %s and state to 'Completed' for run id %d" % ( EndTime, RunID ) )
+        SQL = "UPDATE Profiles SET end_time='%s', state='Completed' where run_id=%d" % ( EndTime, RunID )
+        try:
+          SQLCur.execute(SQL)
+          SQLConn.commit()
+        except:
+          SQLConn.rollback()
+          L.error("DB Update failed!")
+  
+      SegCompStat = 0
+  
+      L.info("Polling for 'Running' firing profiles...")
+  
+    SQLConn.close()
+    time.sleep(2)
 
-    SegCompStat = 0
+except KeyboardInterrupt:  
+  print "\nKeyboard interrupt caught. Cleaning up...\n"
 
-    L.info("Polling for 'Running' firing profiles...")
-
-  SQLConn.close()
-  time.sleep(2)
+except:  
+  print "\nOther error or exception occurred! Cleaning up...\n"  
+  
+finally:  
+  GPIO.output(4,False) ## Turn off GPIO pin 4
+  lcd.close(clear=True)
+  GPIO.cleanup() # this ensures a clean exit  
+  print "All clean - Stopping.\n"
 
