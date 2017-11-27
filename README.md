@@ -7,7 +7,7 @@ I have a good size 220v 45amp electric kiln that has the old "kiln-sitter" style
 
 WARNING! Electricity and heat are dangerous! Please be careful and seek professional help if you are not experienced dealing with high voltage and heat. Use this code/information at your own risk.
 
-This is what I hoped to accomplish - and I think I did:
+This is what I hoped to accomplish:
 
 - Create a PID controller in Python to control an electric kiln. The program takes target temperature, rate, hold time and interval seconds as inputs.
 - Daemonize it
@@ -27,17 +27,32 @@ Future improvements:
 - Overheat shutdown
 
 Install:
-- Hardware: Raspberry Pi 3, MAX31855 thermocouple interface from Adafruit (https://www.adafruit.com/product/269), High temperature (2372 F) type K thermocouple (http://r.ebay.com/a4cHY1 - search for "kiln thermocouple"), 6 x 40amp Solid State Relays - 2 for each heating element (http://a.co/8PtFgIr).
+- Hardware: Raspberry Pi 3, MAX31855 thermocouple interface from Adafruit (https://www.adafruit.com/product/269), High temperature (2372 F) type K thermocouple (http://r.ebay.com/a4cHY1 - search for "kiln thermocouple"), 6 x 40amp Solid State Relays - 2 for each heating element (http://a.co/8PtFgIr), 4 x 20 LCD Display (https://www.adafruit.com/product/198), 5v reed or solid state relay (low voltage load) used to switch 5v supply to high load SSRs (note that the reed relay I used is switched successfully using the 3.3v supply of the GPIO pins), resistor for LED, variable resistor for LCD contrast adjustment.
 
 - Pin-Out:
 
-		MAX31855+:	3.3v, Pin 1
-		MAX31855-:	GROUND, Pin 6
-		MAX31855 CLK:	GPIO 25, Pin 22
-		MAX31855 CS:	GPIO 24, Pin 18
-		MAX31855 DO:	GPIO 18, Pin 12
-		RELAY+: 	GPIO 4, Pin 7
-		RELAY-:		GROUND, Pin 5
+		MAX31855+:		3.3v, Pin 1
+		MAX31855-:		GROUND, Pin 20
+		MAX31855 CLK:		GPIO 25, Pin 22
+		MAX31855 CS:		GPIO 24, Pin 18
+		MAX31855 DO:		GPIO 18, Pin 12
+		REED RELAY+: 		GPIO 4, Pin 7
+		REED RELAY-:		GROUND, Pin 20
+		REED RELAY INPUT: 	5v, Pin 2
+		REED RELAY OUTPUT:	To LED, and high power SSRs (see Fritzing diagram)
+		LCD Vss: 		GROUND, Pin 20
+		LCD Vcc: 		5v, Pin 2
+		LCD Vo: 		Variable Resistor
+		LCD RS: 		GPIO 17, Pin 11
+		LCD R/W: 		GROUND, Pin 20
+		LCD E:			GPIO 27, Pin 13
+		LCD DB4:		GPIO 12, Pin 32
+		LCD DB5:		GPIO 16, Pin 36
+		LCD DB6:		GPIO 20, Pin 38
+		LCD DB7:		GPIO 21, Pin 40
+		LCD LED+:		5v, Pin 2
+		LCD LED-:		GROUND, Pin 20
+		
 
 - Install PiLN files in /home and create log directory:
 
