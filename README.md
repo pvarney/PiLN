@@ -27,7 +27,7 @@ Future improvements:
 - Overheat shutdown
 
 Install:
-- Hardware: Raspberry Pi 3, MAX31855 thermocouple interface from Adafruit (https://www.adafruit.com/product/269), High temperature (2372 F) type K thermocouple (http://r.ebay.com/a4cHY1 - search for "kiln thermocouple"), 6 x 40amp Solid State Relays - 2 for each heating element (http://a.co/8PtFgIr), 4 x 20 LCD Display (https://www.adafruit.com/product/198), 5v reed or solid state relay (low voltage load) used to switch 5v supply to high load SSRs (note that the reed relay I used is switched successfully using the 3.3v supply of the GPIO pins), resistor for LED, variable resistor for LCD contrast adjustment.
+- Hardware: Raspberry Pi 3, MAX31855 thermocouple interface from Adafruit (https://www.adafruit.com/product/269), High temperature (2372 F) type K thermocouple (http://r.ebay.com/a4cHY1 - search for "kiln thermocouple"), 6 x 40amp Solid State Relays - 2 for each heating element (http://a.co/8PtFgIr), 4 x 20 LCD Display (https://www.adafruit.com/product/198), 5v reed or solid state relay (low voltage load) used to switch 5v supply to high load SSRs (note that the 5v reed relay I used is switched successfully using the 3.3v supply of the GPIO pins), LED for relay on indicator, resistor for LED, variable resistor for LCD contrast adjustment.
 
 - Pin-Out:
 
