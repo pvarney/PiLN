@@ -146,5 +146,7 @@ Install:
 		Derivative:	0.00
 	I also had good results setting the interval seconds to 10
 
-
+Using the Web App:
+- On the same network that the RPi is connected to, go to http://<RPi_IPAddress>/pilnapp/home.cgi
+From there, I hope it's all fairly self-explanatory. Feel free to contact me with questions!
   
