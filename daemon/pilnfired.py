@@ -203,7 +203,7 @@ def Fire(RunID,Seg,TargetTmp,Rate,HoldMin,Window,Kp,Ki,Kd):
       ReadTmp   = CtoF(ReadCTmp)
       ReadCITmp = Sensor.readInternalC()
       ReadITmp  = CtoF(ReadCITmp)
-      if math.isnan(ReadTmp):
+      if math.isnan(ReadTmp) or ( abs( ReadTmp - LastTmp ) > ( 2 * Window ) ) or ReadTmp == 0 or ReadTmp > 2400:
         ReadTmp = LastTmp
 
       if RampTrg == 0:

@@ -34,20 +34,24 @@
   <th>Target Temp</th>
   <th>Rate(degrees/hr)</th>
   <th>Hold Minutes</th>
+  <th>Segment Minutes</th>
   <th>Interval Seconds</th>
   <th>Last Start Time</th>
   <th>Last End Time</th>
  </tr>
+ {% set lastTemp = 70 %}
  {% for segment in segments %}
  <tr>
   <td>{{ segment['segment'] }}</td>
   <td>{{ segment['set_temp'] }}</td>
   <td>{{ segment['rate'] }}</td>
   <td>{{ segment['hold_min'] }}</td>
+  <td>{{ ( ( ( segment['set_temp'] - lastTemp )|abs / segment['rate'] ) * 60 )|int + segment['hold_min'] }}</td>
   <td>{{ segment['int_sec'] }}</td>
   <td>{{ segment['start_time'] }}</td>
   <td>{{ segment['end_time'] }}</td>
  </tr>
+ {% set lastTemp = segment['set_temp'] %}
  {% endfor %}
  </table>
  <br>
