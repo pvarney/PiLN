@@ -149,4 +149,6 @@ Install:
 Using the Web App:
 - On the same network that the RPi is connected to, go to http://<RPi_IPAddress>/pilnapp/home.cgi
 From there, I hope it's all fairly self-explanatory. Feel free to contact me with questions!
-  
+
+UPDATE 4/8/2018:
+I had a problem with one of the heating elements not working and found that the SSRs couldn't hold up to the heat - even with the heat sinks. I have since replaced them with mechanical relays (same type that were in it before I ripped the guts out). I am now using a 4 relay module to switch on/off the 220v coil voltage on the relays. I also put the MAX31855 module in its own metal box to see if it would reduce the amount of temperature fluctuation. 
